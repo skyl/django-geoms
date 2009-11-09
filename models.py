@@ -28,8 +28,10 @@ class Geom(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, blank=True)
     datetime = models.DateTimeField(editable=False, auto_now=True)
+
     if User:
         owner = models.ForeignKey(User, blank=True, null=True)
+
     if TagField:
         tags = TagField()
 
@@ -73,16 +75,20 @@ class Geom(models.Model):
     class Meta:
         ordering = ( '-datetime', )
 
+
 class GeomRelation(models.Model):
-    ''' For tagging many objects to a Geom object and vice-versa'''
+    ''' For tagging many objects to a Geom object and vice-versa '''
 
     geom = models.ForeignKey(Geom)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
 
+    objects = models.GeoManager()
+
+
 def get_geoms_for_object(obj):
-    ''' takes an object and returns qs or related Geoms.
+    ''' takes an object and returns qs of related Geoms.
 
     '''
     ct = ContentType.objects.get_for_model(obj)
@@ -93,4 +99,5 @@ def get_geoms_for_object(obj):
 def get_objects_for_geom(geom):
     ''' takes a geom and returns the related objects '''
     pass
+
 
