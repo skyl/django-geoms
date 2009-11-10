@@ -29,14 +29,13 @@ def list(request, app_label=None, model_name=None, id=None, ):
         for g in geoms:
             f.extend( g.get_info_pairs() )
 
-        print f
         map = InfoMap(f,
                     options = {
                         'map_style':{'width':'100%', 'height':'550px',},
                         'layers': ['google.satellite', 'google.hybrid',  'google.streets' ], # 'google.terrain', ],
                         'default_lat': 44,
                         'default_lon': -72,
-                        'default_zoom': 1,
+                        #'default_zoom': 1,
                         'map_div_class':'',
                         'map_div_style': {'width':'100%',},
                     }
@@ -99,9 +98,8 @@ def detail(request, id):
     try:
         geom = Geom.objects.get( id=id )
 
-    except:
+    except Geom.DoesNotExist:
         return HttpResponseRedirect(reverse('geoms_list'))
-
 
     map = MapDisplay( fields = geom.geom_fields(),
             options = {
@@ -110,18 +108,7 @@ def detail(request, id):
             }
     )
 
-
-    '''
-    ct = ContentType.objects.get(\
-            app_label = .content_type.app_label,
-            model = point.content_type.model)
-
-    obj = ct.get_object_for_this_type(id = point.object_id)
-    '''
-
-    context = {'geom':geom, 'map':map,}
-
-    return render_to_response('geoms/detail.html', context,\
+    return render_to_response('geoms/detail.html', locals(),
                 context_instance=RequestContext(request))
 
 @login_required

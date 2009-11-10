@@ -66,7 +66,10 @@ class Geom(models.Model):
             return []
 
     def geom_fields(self):
+        ''' returns what is needed for the fields kwarg of olwidget.widgets.MapDisplay '''
+
         f = []
+
         if self.point:
             f.append(self.point)
         if self.line:
@@ -85,11 +88,16 @@ class Geom(models.Model):
         return f
 
     def get_info_pairs(self):
+        ''' this method is good for making the olwidget.widgets.InfoMap happen '''
+
         result = []
         for g in self.geom_fields():
             result.append( [ g, r'<a href="%s">%s</a>' % (self.get_absolute_url(), self.title) ] )
 
         return result
+
+    def related_objects_list(self):
+        return [ co.content_object for co in self.geomrelation_set.all() ]
 
     @models.permalink
     def get_absolute_url(self):
@@ -120,10 +128,5 @@ def get_geoms_for_object(obj):
     ct = ContentType.objects.get_for_model(obj)
     id = obj.id
     grs = GeomRelation.objects.filter( content_type=ct, object_id=id )
+
     return Geom.objects.filter(geomrelation__in=grs)
-
-def get_objects_for_geom(geom):
-    ''' takes a geom and returns the related objects '''
-    pass
-
-

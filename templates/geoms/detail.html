@@ -10,12 +10,18 @@
 
 
 {% block body %}
-{{geom}}
+
     {{map}}
+    
     {% if geom.zoom %}
         <script>
                 map.zoomTo({{geom.zoom}});
         </script>
     {% endif %}
+
+
+    {% for o in geom.related_objects_list %}
+        <a href="{{ o.get_absolute_url }}">{{o}}</a>
+    {% endfor %}
 
 {% endblock %}
