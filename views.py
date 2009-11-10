@@ -9,7 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from geoms.forms import GeomForm
 from geoms.models import Geom
-from olwidget.widgets import MapDisplay
+from olwidget.widgets import MapDisplay, InfoMap
 
 
 #from vectorformats.Formats import Django, GeoJSON
@@ -27,23 +27,10 @@ def list(request, app_label=None, model_name=None, id=None, ):
         geoms = Geom.objects.all()[:15]
         f = []
         for g in geoms:
-            if g.point:
-                f.append(g.point)
-            if g.line:
-                f.append(g.line)
-            if g.poly:
-                f.append(g.poly)
-            if g.mpoint:
-                f.extend(g.mpoint)
-            if g.mline:
-                f.extend(g.mline)
-            if g.mpoly:
-                f.extend(g.mpoly)
-            if g.collection:
-                f.extend(g.collection)
+            f.extend( g.get_info_pairs() )
 
-
-        map = MapDisplay( fields=f,
+        print f
+        map = InfoMap(f,
                     options = {
                         'map_style':{'width':'100%', 'height':'550px',},
                         'layers': ['google.satellite', 'google.hybrid',  'google.streets' ], # 'google.terrain', ],
@@ -110,25 +97,29 @@ def detail(request, id):
     '''
 
     try:
-        point = Geom.objects.get( id=id )
+        geom = Geom.objects.get( id=id )
 
     except:
         return HttpResponseRedirect(reverse('geoms_list'))
 
 
-    map = MapDisplay( fields = [ point.point, ],
-            map_options = {
-                    'map_style':{'width':'100%', 'height':'550px',},
+    map = MapDisplay( fields = geom.geom_fields(),
+            options = {
+                    'map_div_class':'',
+                    'map_div_style': {'width':'100%',},
             }
     )
 
+
+    '''
     ct = ContentType.objects.get(\
-            app_label = point.content_type.app_label,
+            app_label = .content_type.app_label,
             model = point.content_type.model)
 
     obj = ct.get_object_for_this_type(id = point.object_id)
+    '''
 
-    context = {'point':point, 'object':obj, 'content_type': ct, 'map':map,  }
+    context = {'geom':geom, 'map':map,}
 
     return render_to_response('geoms/detail.html', context,\
                 context_instance=RequestContext(request))

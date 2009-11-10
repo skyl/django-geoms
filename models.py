@@ -65,6 +65,32 @@ class Geom(models.Model):
         else:
             return []
 
+    def geom_fields(self):
+        f = []
+        if self.point:
+            f.append(self.point)
+        if self.line:
+            f.append(self.line)
+        if self.poly:
+            f.append(self.poly)
+        if self.mpoint:
+            f.extend(self.mpoint)
+        if self.mline:
+            f.extend(self.mline)
+        if self.mpoly:
+            f.extend(self.mpoly)
+        if self.collection:
+            f.extend(self.collection)
+
+        return f
+
+    def get_info_pairs(self):
+        result = []
+        for g in self.geom_fields():
+            result.append( [ g, r'<a href="%s">%s</a>' % (self.get_absolute_url(), self.title) ] )
+
+        return result
+
     @models.permalink
     def get_absolute_url(self):
         return ('geoms.views.detail', (), {'id':self.id,} )
