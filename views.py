@@ -7,8 +7,8 @@ from django.template import RequestContext
 from django.contrib.contenttypes.models import ContentType
 
 
-from mpolys.forms import MPolyForm
-from mpolys.models import MPoly
+from geoms.forms import GeomForm
+from geoms.models import Geom
 from olwidget.widgets import MapDisplay
 
 
@@ -17,21 +17,46 @@ from django.core import serializers
 
 
 def list(request, app_label=None, model_name=None, id=None, ):
-    ''' List all mpolys (ALL, all for model instance, or all for table)
+    ''' List all geoms (ALL, all for model instance, or all for table)
 
     '''
 
     # FIXME, I think this could be DRYed out a bit; experimental overloading of the
     # view might not be the coolest thing.
     if not id and not model_name and not app_label:
-        mpolys = MPoly.objects.all()
-        map = MapDisplay( fields=[p.point for p in mpolys],
-                map_options = {
-                    'map_style':{'width':'100%', 'height':'550px',},
-                }
+        geoms = Geom.objects.all()[:15]
+        f = []
+        for g in geoms:
+            if g.point:
+                f.append(g.point)
+            if g.line:
+                f.append(g.line)
+            if g.poly:
+                f.append(g.poly)
+            if g.mpoint:
+                f.extend(g.mpoint)
+            if g.mline:
+                f.extend(g.mline)
+            if g.mpoly:
+                f.extend(g.mpoly)
+            if g.collection:
+                f.extend(g.collection)
+
+
+        map = MapDisplay( fields=f,
+                    options = {
+                        'map_style':{'width':'100%', 'height':'550px',},
+                        'layers': ['google.satellite', 'google.hybrid',  'google.streets' ], # 'google.terrain', ],
+                        'default_lat': 44,
+                        'default_lon': -72,
+                        'default_zoom': 1,
+                        'map_div_class':'',
+                        'map_div_style': {'width':'100%',},
+                    }
         )
-        context = { 'map':map,'mpolys':mpolys, }
-        return render_to_response('mpolys/all.html', context,\
+
+        context = { 'map':map,'geoms':geoms, }
+        return render_to_response('geoms/all.html', context,\
                 context_instance=RequestContext(request))
 
     elif id and model_name and app_label:
@@ -42,18 +67,18 @@ def list(request, app_label=None, model_name=None, id=None, ):
             obj = ct.get_object_for_this_type( id=id )
 
         except:
-            return HttpResponseRedirect(reverse('mpolys_list'))
+            return HttpResponseRedirect(reverse('geoms_list'))
 
 
-        mpolys = MPoly.objects.filter( content_type=ct, object_id=id )
-        map = MapDisplay( fields=[p.point for p in mpolys],
+        geoms = Geom.objects.filter( content_type=ct, object_id=id )
+        map = MapDisplay( fields=[p.point for p in geoms],
                 map_options = {
                     'map_style':{'width':'100%', 'height':'550px',},
                 }
         )
 
-        context = {'mpolys':mpolys, 'object':obj, 'content_type':ct, 'map':map, }
-        return render_to_response('mpolys/all.html', context,\
+        context = {'geoms':geoms, 'object':obj, 'content_type':ct, 'map':map, }
+        return render_to_response('geoms/all.html', context,\
                 context_instance=RequestContext(request))
 
     elif app_label and model_name and not id:
@@ -63,17 +88,17 @@ def list(request, app_label=None, model_name=None, id=None, ):
                     model = model_name)
 
         except:
-            return HttpResponseRedirect(reverse('mpolys_list'))
+            return HttpResponseRedirect(reverse('geoms_list'))
 
-        mpolys = MPoly.objects.filter(content_type = ct)
-        map = MapDisplay( fields=[p.point for p in mpolys],
+        geoms = Geom.objects.filter(content_type = ct)
+        map = MapDisplay( fields=[p.point for p in geoms],
                 map_options = {
                     'map_style':{'width':'100%', 'height':'550px',},
                 }
         )
-        context = {'mpolys':mpolys, 'content_type':ct, 'map':map,}
+        context = {'geoms':geoms, 'content_type':ct, 'map':map,}
 
-        return render_to_response('mpolys/all.html', context,\
+        return render_to_response('geoms/all.html', context,\
                 context_instance=RequestContext(request))
 
     else:
@@ -85,10 +110,10 @@ def detail(request, id):
     '''
 
     try:
-        point = MPoly.objects.get( id=id )
+        point = Geom.objects.get( id=id )
 
     except:
-        return HttpResponseRedirect(reverse('mpolys_list'))
+        return HttpResponseRedirect(reverse('geoms_list'))
 
 
     map = MapDisplay( fields = [ point.point, ],
@@ -105,7 +130,7 @@ def detail(request, id):
 
     context = {'point':point, 'object':obj, 'content_type': ct, 'map':map,  }
 
-    return render_to_response('mpolys/detail.html', context,\
+    return render_to_response('geoms/detail.html', context,\
                 context_instance=RequestContext(request))
 
 @login_required
@@ -114,7 +139,7 @@ def delete(request, id):
 
     '''
     try:
-        point = MPoly.objects.get(id=id)
+        point = Geom.objects.get(id=id)
     except:
         return HttpResponseNotFound()
 
@@ -126,7 +151,7 @@ def delete(request, id):
             return HttpResponseNotFound()
 
         else:
-            return render_to_response('mpolys/confirm_delete.html', context,\
+            return render_to_response('geoms/confirm_delete.html', context,\
                     context_instance=RequestContext(request))
 
     else:
@@ -134,25 +159,25 @@ def delete(request, id):
 
 @login_required
 def change(request, id):
-    ''' Change the data for a single MPoly() obj '''
+    ''' Change the data for a single Geom() obj '''
 
     try:
-        point = MPoly.objects.get(id=id)
+        point = Geom.objects.get(id=id)
     except:
         return HttpResponseNotFound()
 
     if request.method == 'POST' and point.owner == request.user:
 
-        form = MPolyForm(request.POST, instance=point)
+        form = GeomForm(request.POST, instance=point)
 
         if form.is_valid():
             form.save()
             return HttpResponseRedirect(point.get_absolute_url())
 
     elif point.owner == request.user:
-        form = MPolyForm( instance=point)
+        form = GeomForm( instance=point)
         context = {'point':point, 'form':form, }
-        return render_to_response('mpolys/change.html', context,\
+        return render_to_response('geoms/change.html', context,\
                 context_instance=RequestContext(request) )
 
     else:
@@ -177,7 +202,7 @@ def add(request, app_label, model_name, id):
     if request.method == 'POST':
         request.POST.update( {'owner':request.user.id, 'object_id':id,\
                 'content_type':ct.id, 'content_obj':obj,} )
-        form = MPolyForm(request.POST)
+        form = GeomForm(request.POST)
 
         if form.is_valid():
             form.save()
@@ -191,15 +216,15 @@ def add(request, app_label, model_name, id):
                 return HttpResponseRedirect(obj.get_absolute_url())
 
             except:
-                return HttpResponseRedirect(reverse('mpolys_list'))
+                return HttpResponseRedirect(reverse('geoms_list'))
 
     else:
-        form = MPolyForm()
+        form = GeomForm()
 
     context = {'form':form, 'object':obj, 'content_type':ct, }
     context.update(locals())
 
-    return render_to_response('mpolys/add.html', context,\
+    return render_to_response('geoms/add.html', context,\
             context_instance = RequestContext(request))
 
 

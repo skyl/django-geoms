@@ -1,16 +1,16 @@
-{% extends "points/base.html" %}
+{% extends "geoms/base.html" %}
 
 {% load i18n %}
 {% load pagination_tags %}
-{% load avatar_tags %}
 {% load humanize %}
-{% load profile_tags %}
 
-{% block head_title %}{% blocktrans %}Profiles map{% endblocktrans %}{% endblock %}
+{% block head_title %}{% blocktrans %}Recent Ativity Map{% endblocktrans %}{% endblock %}
 
 {% block extra_head %}
-   <script type="text/javascript" src="http://www.google.com/jsapi?key={{GAK}}"></script>
 
+{{map.media}}
+   {% comment %}
+<script type="text/javascript" src="http://www.google.com/jsapi?key={{GAK}}"></script>
     <script type="text/javascript">
         google.load("maps", "2");
         //google.load("search", "1");
@@ -25,7 +25,7 @@
 
                     var point;
                     var marker;
-                    {% for p in points %}
+                    {% for in points %}
                     point = new GLatLng({{p.point.tuple.1}}, {{p.point.tuple.0}});
                     marker = new GMarker(point, {draggable: false});
                     GEvent.addListener(marker, "click", function() {
@@ -52,13 +52,13 @@
         google.setOnLoadCallback(initialize);   
         
     </script>
-
+    {% endcomment %}
 
 {% endblock %}
 
 
 {% block body %}
-    <h1>{% trans "All Points" %}</h1>
+    <h1>{% trans "All Geoms" %}</h1>
 
 {% comment %}
     <form method="GET" action="">
@@ -70,9 +70,11 @@
     </form>
 {% endcomment %}
 
-
+{{map}}
+{% comment %}
 <div id="map" style="width:90%; height:550px; margin: 2em auto;">
 </div>
+{% endcomment %}
 
 <div id="map-description" style="text-align:center;">
 Use the standard controls to navigate the map.  Double-clicking will zoom where you click.  Click on a marker for more information.

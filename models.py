@@ -60,10 +60,10 @@ class Geom(models.Model):
             if q:
                 return WorldBorders.objects.filter(q)
             else:
-                return None
+                return []
 
         else:
-            return None
+            return []
 
     @models.permalink
     def get_absolute_url(self):
