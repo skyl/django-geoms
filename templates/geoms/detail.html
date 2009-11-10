@@ -1,22 +1,21 @@
 {% extends 'geoms/base.html' %}
 
+{% block head_title %}{{geom.title}}{% endblock %}
+
 {% block extra_head %}
 
     {{map.media}}
-
-    {% if geom.zoom %}
-        <script>
-            $(function() {
-                map.map.zoomTo({{geom.zoom}});
-            });
-        </script>
-    {% endif %}
 
 {% endblock %}
 
 
 {% block body %}
-
+{{geom}}
     {{map}}
+    {% if geom.zoom %}
+        <script>
+                map.zoomTo({{geom.zoom}});
+        </script>
+    {% endif %}
 
 {% endblock %}
