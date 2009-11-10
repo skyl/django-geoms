@@ -1,3 +1,5 @@
+No longer detached!
+
 =============
 django-geoms
 =============
