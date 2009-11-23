@@ -48,10 +48,14 @@ class Geom(models.Model):
 
     def countries(self):
         if WorldBorders:
-            geoms = [self.point, self.mpoint, self.line, self.mline, self.poly,
-                    self.mpoly]
-            if self.collection:
-                geoms.extend([g for g in self.collection])
+            geoms = self.geom_fields()
+            '''
+            geoms = [self.point, self.line, self.poly ]
+            collections = [self.collection, self.mpoint, self.mline, self.mpoly]
+            for c in collections:
+                if c:
+                    geoms.extend([g for g in c])
+            '''
             q = Q()
             for g in geoms:
                 if g is not None:
