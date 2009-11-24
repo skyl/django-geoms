@@ -26,7 +26,7 @@ class Geom(models.Model):
 
     '''
     title = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, blank=True)
+    slug = models.SlugField(max_length=255)
     datetime = models.DateTimeField(editable=False, auto_now=True)
 
     if User:
