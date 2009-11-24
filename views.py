@@ -32,10 +32,10 @@ def list(request, app_label=None, model_name=None, id=None, ):
         map = InfoMap(f,
                     options = {
                         'map_style':{'width':'100%', 'height':'550px',},
-                        'layers': ['google.satellite', 'google.hybrid',  'google.streets' ], # 'google.terrain', ],
+                        #'layers': ['google.satellite', 'google.hybrid',  'google.streets' ], # 'google.terrain', ],
                         'default_lat': 44,
                         'default_lon': -72,
-                        #'default_zoom': 1,
+                        'default_zoom': 1,
                         'map_div_class':'',
                         'map_div_style': {'width':'100%',},
                     }
