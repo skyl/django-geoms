@@ -124,6 +124,10 @@ class GeomRelation(models.Model):
 
     objects = models.GeoManager()
 
+    def __unicode__(self):
+        return '{co} <--> {geom}'\
+                .format(co = self.content_object,
+                geom = self.geom,)
 
 def get_geoms_for_object(obj):
     ''' takes an object and returns qs of related Geoms.
