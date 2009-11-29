@@ -22,22 +22,19 @@ urlpatterns = patterns('',
 
 )
 
+from django.conf import settings
 
-'''
-from settings import INSTALLED_APPS
-
-if 'piston' in INSTALLED_APPS:
+if 'piston' in settings.INSTALLED_APPS:
     from piston.resource import Resource
-    from piston.authentication import HttpBasicAuthentication
+    from piston.authentication import OAuthAuthentication
 
-    from geoms.handlers import PointHandler
+    from geoms.handlers import GeomHandler
 
-    point_resource = Resource(handler=PointHandler)
+    auth = OAuthAuthentication()
+    ad = { 'authentication': auth }
+    geom_resource = Resource( handler=GeomHandler, **ad)
 
     urlpatterns += patterns('',
-
-            url(r'^api/(?P<id>\d+)/$', point_resource),
-
+            url(r'^api/(?P<id>\d+)/$', geom_resource),
     )
 
-'''

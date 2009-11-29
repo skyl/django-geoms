@@ -46,6 +46,16 @@ class Geom(models.Model):
     zoom = models.PositiveIntegerField(blank=True, null=True)
     objects = models.GeoManager()
 
+    class Meta:
+        ordering = ( '-datetime', )
+
+    def __unicode__(self):
+        return "%s" % (self.title)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('geoms.views.detail', (), {'id':self.id,} )
+
     def countries(self):
         if WorldBorders:
             geoms = self.geom_fields()
@@ -59,7 +69,7 @@ class Geom(models.Model):
             q = Q()
             for g in geoms:
                 if g is not None:
-                    q =     q|Q(mpoly__intersects=g)
+                    q =     q|Q( mpoly__intersects=g )
 
             if q:
                 return WorldBorders.objects.filter(q)
@@ -102,16 +112,6 @@ class Geom(models.Model):
 
     def related_objects_list(self):
         return [ co.content_object for co in self.geomrelation_set.all() ]
-
-    @models.permalink
-    def get_absolute_url(self):
-        return ('geoms.views.detail', (), {'id':self.id,} )
-
-    def __unicode__(self):
-        return "%s" % (self.title)
-
-    class Meta:
-        ordering = ( '-datetime', )
 
 
 class GeomRelation(models.Model):

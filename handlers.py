@@ -4,40 +4,66 @@ import re
 from piston.handler import BaseHandler
 from piston.utils import rc, throttle
 
-from points.models import Point
-from points.forms import PointForm
+from geoms.models import Geom
+from geoms.forms import GeomForm
 
-class PointHandler(BaseHandler):
-    allowed_methods = ('GET', 'PUT', 'DELETE')
-    fields = ('point', 'zoom', 'owner', 'datetime', 'content_type', 'object_id', 'content_object')
-    exclude = ('id', re.compile(r'^private_'))
-    model = Point
+class AnonGeomHandler(BaseHandler):
+    allowed_methods = ('GET', )
+    fields = ('title', 'datetime',
+                    'point', 'mpoint',
+                    'line', 'mline',
+                    'poly', 'mpoly',
+                    'collection', 'zoom',
+                    'owner', 'tags', 'slug')
+    model = Geom
 
     def read(self, request, id):
-        point = Point.objects.get(id=id)
-        return point
+        geom = Geom.objects.get( id=int(id) )
+        return geom
+
+
+class GeomHandler(BaseHandler):
+    allowed_methods = ('GET', 'PUT', 'DELETE')
+    fields = ('title', 'datetime',
+                    'point', 'mpoint',
+                    'line', 'mline',
+                    'poly', 'mpoly',
+                    'collection', 'zoom',
+                    'owner', 'tags', 'slug')
+    #exclude = ('id', re.compile(r'^private_'))
+    model = Geom
+    anonymous = AnonGeomHandler
+
+    def read(self, request, id):
+        geom = Geom.objects.get( id=int(id) )
+        return geom
 
 
     def update(self, request, id):
-        point = Point.objects.get(id=id)
 
-        # ?? will this work?
-        p = PointForm(request.PUT, instance=point)
-        p.save()
+        geom = Geom.objects.get( id=int(id) )
+        if not request.user == geom.owner:
+            return rc.FORBIDDEN
 
-        return p
+        geom.title = request.PUT.get('title')
+        geom.save()
 
+        return geom
+
+    '''
     def create(self, request):
         p = PointForm(request.POST)
         p.save()
+    '''
 
     def delete(self, request, id):
-        point = Point.objects.get(point=point)
 
-        if not request.user == point.owner:
+        geom = Geom.objects.get( id=int(id) )
+
+        if not request.user == geom.owner:
             return rc.FORBIDDEN # returns HTTP 401
 
-        point.delete()
+        geom.delete()
 
         return rc.DELETED # returns HTTP 204
 
